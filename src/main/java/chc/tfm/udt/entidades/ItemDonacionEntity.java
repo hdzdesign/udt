@@ -20,7 +20,7 @@ public class ItemDonacionEntity {
     private Long id;
 
     @Column(name = "cantidad")
-    private Integer cantidad;
+    private Long cantidad;
     /**
      * ManyToOne: Muchos items en un solo producto.
      * JoinColumn: Indicamos el nombre de la llave foranea de la tabla donaciones_items, aunque se crearía de forma automatica

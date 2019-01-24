@@ -1,3 +1,4 @@
+/*
 package chc.tfm.udt.logica;
 
 import chc.tfm.udt.DTO.Donacion;
@@ -45,16 +46,17 @@ public class Relacionados {
         donacionesService.createOne(donacion);
 
         return donacion;
+*/
 
 
-    }
+   /* }
 
     public void addItemDonacion(ItemDonacion item) {
         donacion.setItems(listaItems);
 
     }
+*/
 
 
 
-
-}
+//

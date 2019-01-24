@@ -7,6 +7,7 @@ import chc.tfm.udt.repositorios.ProductoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +21,11 @@ public class ProductoService implements CrudService<Producto> {
     private final Logger LOG = LoggerFactory.getLogger(getClass());
     private ProductoRepository productoRepository;
     private ProductoConverter productoConverter;
-
+//------si yo veo que 1 gran problema es que se genera 1 objeto dentro de otro infinitamente
+// vamos a hacer una cosa
     public ProductoService(@Qualifier(value = "ProductoRepository") ProductoRepository productoRepository,
-                           @Qualifier(value = "ProductoConverter") ProductoConverter productoConverter) {
+                           @Qualifier(value = "ProductoConverter") ProductoConverter productoConverter,
+                           @Qualifier(value = "JdbcTemplate") JdbcTemplate JdbcTemplate) {
         this.productoRepository = productoRepository;
         this.productoConverter = productoConverter;
     }
@@ -38,6 +41,11 @@ public class ProductoService implements CrudService<Producto> {
     @Override
     @Transactional (readOnly = true)
     public Producto findOne(Long id) {
+        String sql = "SELECT A.* " + 
+                     "FROM productos A " + 
+                     "WHERE A.id=?";
+
+        
         Producto resultado = null;
         Optional<ProductoEntity> buscar = productoRepository.findById(id);
         if(buscar.isPresent()){

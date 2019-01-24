@@ -1,5 +1,6 @@
 package chc.tfm.udt.DTO;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.gson.Gson;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +9,7 @@ import java.util.Date;
 
 @Data
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Producto {
 
     private Long id;
@@ -17,8 +19,6 @@ public class Producto {
     private Double precio;
 
     private Date createAt;
-
-    private ItemDonacion itemDonacion;
 
     @Override
     public String toString() {

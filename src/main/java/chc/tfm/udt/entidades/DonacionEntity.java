@@ -37,7 +37,7 @@ public class DonacionEntity {
      * Muchas Donaciones un solo jugador.
      * Existe una relación bidireccional.
      */
-    @ManyToOne(fetch = FetchType.LAZY,cascade = {CascadeType.ALL}/*, targetEntity = JugadorEntity.class*/)
+    @ManyToOne(fetch = FetchType.LAZY/*, targetEntity = JugadorEntity.class*/)
     //@JoinColumn(name = "jugador_id", referencedColumnName = "id")
     // Solo se realiza la consulta cuando se invoca al metodo
     private JugadorEntity jugadorEntity;
@@ -48,7 +48,7 @@ public class DonacionEntity {
      * puesto que es una relación unidireccional.
      * Hay que crear el campo donacion_id en la tabla  en base datos no en el Entity.
      */
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL/*, targetEntity = ItemDonacionEntity.class*/)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true/*, targetEntity = ItemDonacionEntity.class*/)
     @JoinColumn(name = "donacion_id"/*, referencedColumnName = "id"*/)
     private List<ItemDonacionEntity> items;
 
