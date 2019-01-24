@@ -2,6 +2,7 @@ package chc.tfm.udt.servicio;
 
 import chc.tfm.udt.DTO.Donacion;
 import chc.tfm.udt.DTO.Jugador;
+import chc.tfm.udt.config.DataSourceJDBC;
 import chc.tfm.udt.entidades.DonacionEntity;
 import chc.tfm.udt.entidades.JugadorEntity;
 import chc.tfm.udt.convertidores.DonacionConverter;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
@@ -26,17 +28,20 @@ public class JugadoresService implements CrudService<Jugador> {
     private CrudService<Donacion> donacionesService;
     private JugadorConverter converter;
     private DonacionConverter donacionConverter;
+    private JdbcTemplate jdbcTemplate;
 
 
 
     public JugadoresService (@Qualifier("JugadorRepository") JugadorRepository jugadorRepository,
                              @Qualifier("DonacionesService") @Lazy CrudService<Donacion> donacionesService,
                              @Qualifier("JugadorConverter") JugadorConverter converter,
-                             @Qualifier("DonacionConverter")DonacionConverter donacionConverter){
+                             @Qualifier("DonacionConverter")DonacionConverter donacionConverter,
+                             @Qualifier("JdbcTemplate")JdbcTemplate  jdbcTemplate ){
         this.jugadorRepository = jugadorRepository;
         this.donacionesService = donacionesService;
         this.converter = converter;
         this.donacionConverter = donacionConverter;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
@@ -51,7 +56,6 @@ public class JugadoresService implements CrudService<Jugador> {
 
         return returned;
     }
-
     @Override
     @Transactional(readOnly = true)
     public Jugador findOne(Long id) {

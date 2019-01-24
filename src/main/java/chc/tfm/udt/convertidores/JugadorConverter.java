@@ -68,7 +68,7 @@ public class JugadorConverter implements AttributeConverter<Jugador, JugadorEnti
         j.setInscripcion(dbData.getInscripcion());
         j.setDorsal(dbData.getDorsal());
         j.setFoto(dbData.getFoto());
-        LOG.info("Porque no seteas");
+        LOG.info("Declaramos la lista donacioes");
         List<DonacionEntity> donaciones = dbData.getDonaciones();
         j.setDonaciones(donaciones != null
                 ? donaciones

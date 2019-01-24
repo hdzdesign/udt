@@ -41,7 +41,13 @@ public class DonacionConverter implements AttributeConverter<Donacion, DonacionE
         e.setDescripcion(attribute.getDescripcion());
         e.setCreateAt(attribute.getCreateAt());
         // Set de lista de items de la factura
-        LOG.info("Porque no seteas");
+
+        // Set del jugador
+        LOG.info("donacionEntity " + e.toString());
+        Jugador jugador = attribute.getJugador();
+        e.setJugadorEntity(jugador != null ?
+                jugadorConverter.convertToDatabaseColumn(jugador)
+                : new JugadorEntity());
 
         List<ItemDonacion> items = attribute.getItems();
         e.setItems(items != null
@@ -51,11 +57,7 @@ public class DonacionConverter implements AttributeConverter<Donacion, DonacionE
                             collect(Collectors.toList())
                         : new ArrayList<>());
         LOG.info("No ha seteado");
-        // Set del jugador
-        Jugador jugador = attribute.getJugador();
-        e.setJugadorEntity(jugador != null ?
-                jugadorConverter.convertToDatabaseColumn(jugador)
-                : new JugadorEntity());
+
         LOG.info("Se ha seteado bien el entity");
         LOG.info(e.toString());
         return e;
@@ -70,6 +72,11 @@ public class DonacionConverter implements AttributeConverter<Donacion, DonacionE
         d.setObservacion(dbData.getObservacion());
         d.setCreateAt(dbData.getCreateAt());
         d.setId(dbData.getId());
+        // Seteamos al jugador lo que viene de la entity
+        JugadorEntity jugadorEntity = dbData.getJugadorEntity();
+        d.setJugador(jugadorEntity != null ?
+                jugadorConverter.convertToEntityAttribute(jugadorEntity)
+                : new Jugador());
         // Seteo de la lista de items de la factura
        List<ItemDonacionEntity> itemDonaciones = dbData.getItems();
         d.setItems(itemDonaciones != null
@@ -78,11 +85,7 @@ public class DonacionConverter implements AttributeConverter<Donacion, DonacionE
                     .map(item -> itemConverter.convertToEntityAttribute(item))
                     .collect(Collectors.toList())
                 : new ArrayList<>());
-        // Seteamos al jugador lo que viene de la entity
-        JugadorEntity jugadorEntity = dbData.getJugadorEntity();
-        d.setJugador(jugadorEntity != null ?
-                jugadorConverter.convertToEntityAttribute(jugadorEntity)
-                : new Jugador());
+
         LOG.info("Se ha seteado bien el dto");
         LOG.info(d.toString());
 

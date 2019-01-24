@@ -54,6 +54,12 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<!--JDBC-->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>5.1.4.RELEASE</version>
+		</dependency>
 		<!--DOCUMENTACIÍN DE LA API-->
 		<dependency>
 			<groupId>io.springfox</groupId>
