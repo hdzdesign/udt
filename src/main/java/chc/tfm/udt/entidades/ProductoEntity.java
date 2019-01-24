@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.util.Date;
 
 /**
- * Clase Entity que se comunica con la base de datos para trabajar con los productos relacionados con cada jugador.
+ * Clase Entity que se comunica con la base de datos para trabajar con los productos Relacionados con cada jugador.
  */
 @Data
 @AllArgsConstructor
