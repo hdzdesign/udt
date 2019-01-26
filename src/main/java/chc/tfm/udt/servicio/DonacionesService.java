@@ -8,6 +8,7 @@ import chc.tfm.udt.entidades.DonacionEntity;
 import chc.tfm.udt.entidades.ItemDonacionEntity;
 import chc.tfm.udt.convertidores.DonacionConverter;
 import chc.tfm.udt.convertidores.ItemConverter;
+import chc.tfm.udt.mappers.DonacionRowMapper;
 import chc.tfm.udt.repositorios.DonacionRepository;
 import lombok.extern.java.Log;
 import org.slf4j.Logger;
@@ -79,16 +80,7 @@ public class DonacionesService implements CrudService<Donacion> {
                              "FROM donaciones A " + 
                              "WHERE A.id=?";
 
-        RowMapper<Donacion> donacionMapper = ((rs, i) -> {
-            Donacion d = new Donacion();
-            d.setId(rs.getLong("id"));
-            d.setDescripcion(rs.getString("descripcion"));
-            d.setObservacion(rs.getString("observacion"));
-            d.setCreateAt(rs.getDate("create_at"));
-            return d;
-        });
-
-        Donacion resultado = this.template.query(sqlDonacion, new Object[]{id}, donacionMapper).get(0);
+        Donacion resultado = this.template.query(sqlDonacion, new Object[]{id}, new DonacionRowMapper()).get(0);
 
        if (resultado != null) {
             String sqlItems = "SELECT A.id AS item_id, A.cantidad, B.id AS producto_id, B.nombre, B.precio, B.create_at " +
@@ -125,27 +117,27 @@ public class DonacionesService implements CrudService<Donacion> {
         public Donacion updateOne(Long id, Donacion donacion) {
         Donacion resultado = null;
 
-        Optional<DonacionEntity> buscar = donacionRepository.findById(id);
-        if(buscar.isPresent()){
-            DonacionEntity encontrado = buscar.get();
-
-            encontrado.setId(donacion.getId());
-            encontrado.setObservacion(donacion.getObservacion());
-            encontrado.setDescripcion(donacion.getDescripcion());
-            encontrado.setCreateAt(donacion.getCreateAt());
-            if(encontrado.getId() != null){
-                //encontrado.setJugadorEntity(donacion.getJugador());
-
-            }
-
-            //Encontrar los items de cada donacion
-            List<ItemDonacionEntity> itemsDonacion = findItemsDonacionFromDonacion(donacion);
-            encontrado.setItems(itemsDonacion);
-            // Guardamos
-           DonacionEntity guardado = donacionRepository.save(encontrado);
-           resultado = converter.convertToEntityAttribute(guardado);
-
-        }
+//        Optional<DonacionEntity> buscar = donacionRepository.findById(id);
+//        if(buscar.isPresent()){
+//            DonacionEntity encontrado = buscar.get();
+//
+//            encontrado.setId(donacion.getId());
+//            encontrado.setObservacion(donacion.getObservacion());
+//            encontrado.setDescripcion(donacion.getDescripcion());
+//            encontrado.setCreateAt(donacion.getCreateAt());
+//            if(encontrado.getId() != null){
+//                //encontrado.setJugadorEntity(donacion.getJugador());
+//
+//            }
+//
+//            //Encontrar los items de cada donacion
+//            List<ItemDonacionEntity> itemsDonacion = findItemsDonacionFromDonacion(donacion);
+//            encontrado.setItems(itemsDonacion);
+//            // Guardamos
+//           DonacionEntity guardado = donacionRepository.save(encontrado);
+//           resultado = converter.convertToEntityAttribute(guardado);
+//
+//        }
 
         return resultado;
     }
@@ -167,16 +159,4 @@ public class DonacionesService implements CrudService<Donacion> {
         return resultado;
     }
 
-    private List<ItemDonacionEntity> findItemsDonacionFromDonacion(Donacion d){
-        List<ItemDonacionEntity> itemsEntities = new ArrayList<>();
-
-        d.getItems().forEach(dto -> {
-            ItemDonacion e = itemDonacionesService.findOne(dto.getId());
-            if(d != null){
-                ItemDonacionEntity convertido = itemConverter.convertToDatabaseColumn(e);
-                itemsEntities.add(convertido);
-            }
-        });
-        return itemsEntities;
-    }
 }

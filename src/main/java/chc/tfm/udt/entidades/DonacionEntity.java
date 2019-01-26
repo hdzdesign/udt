@@ -38,7 +38,7 @@ public class DonacionEntity {
      * Existe una relación bidireccional.
      */
     @ManyToOne(fetch = FetchType.LAZY/*, targetEntity = JugadorEntity.class*/)
-    //@JoinColumn(name = "jugador_id", referencedColumnName = "id")
+    @JoinColumn(name = "jugador_id", referencedColumnName = "id")
     // Solo se realiza la consulta cuando se invoca al metodo
     private JugadorEntity jugadorEntity;
 

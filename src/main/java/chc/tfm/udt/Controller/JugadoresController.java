@@ -1,7 +1,9 @@
 package chc.tfm.udt.Controller;
 
+import chc.tfm.udt.DTO.Donacion;
 import chc.tfm.udt.DTO.Jugador;
 import chc.tfm.udt.servicio.CrudService;
+import chc.tfm.udt.servicio.JugadoresService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,14 +12,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 @RestController(value = "JugadoresController")
 public class JugadoresController implements CrudController<Jugador> {
 
     private final Logger LOG = LoggerFactory.getLogger(getClass());
-    private CrudService<Jugador> service;
+    private JugadoresService service;
     @Autowired
-    public JugadoresController(@Qualifier(value = "JugadoresService") CrudService<Jugador> service){
+    public JugadoresController(@Qualifier(value = "JugadoresService") JugadoresService service){
         this.service = service;
 
     }
@@ -45,6 +48,15 @@ public class JugadoresController implements CrudController<Jugador> {
             return new ResponseEntity<>(resultado,HttpStatus.OK);
         }
         else return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+    @GetMapping(value = "/jugadores/{id}/donaciones")
+    public ResponseEntity<List<Donacion>> getJugadorDonations(@PathVariable Long id){
+        List<Donacion> resultados = new ArrayList<>();
+        if(id != null){
+            resultados = service.findJugadorDonations(id);
+            return new ResponseEntity<>(resultados, HttpStatus.OK);
+        }
+        else return new ResponseEntity<>(resultados, HttpStatus.BAD_REQUEST);
     }
 
     @Override

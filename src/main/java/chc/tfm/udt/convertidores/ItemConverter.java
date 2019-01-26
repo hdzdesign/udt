@@ -21,17 +21,13 @@ public class ItemConverter implements AttributeConverter<ItemDonacion, ItemDonac
 
     private final Logger LOG = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    @Qualifier("ProductoConverter")
-    private ProductoConverter productoConverter;
-
     @Override
     public ItemDonacionEntity convertToDatabaseColumn(ItemDonacion attribute) {
         ItemDonacionEntity e = new ItemDonacionEntity();
 
         e.setId(attribute.getId());
         e.setCantidad(attribute.getCantidad());
-        e.setProductoEntity(productoConverter.convertToDatabaseColumn(attribute.getProducto()));
+     //   e.setProductoEntity(productoConverter.convertToDatabaseColumn(attribute.getProducto()));
         LOG.info("Se ha convertido bien el deteo");
         LOG.info(e.toString());
         return e;
@@ -42,7 +38,7 @@ public class ItemConverter implements AttributeConverter<ItemDonacion, ItemDonac
         ItemDonacion d = new ItemDonacion();
         d.setId(dbData.getId());
         d.setCantidad(dbData.getCantidad());
-        d.setProducto(productoConverter.convertToEntityAttribute(dbData.getProductoEntity()));
+       // d.setProducto(productoConverter.convertToEntityAttribute(dbData.getProductoEntity()));
         LOG.info("Se ha convertido bien a entity");
         LOG.info(d.toString());
         return d;
