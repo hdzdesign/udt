@@ -1,94 +1,106 @@
 package chc.tfm.udt.servicio;
 
 import chc.tfm.udt.DTO.Producto;
-import chc.tfm.udt.entidades.ProductoEntity;
-import chc.tfm.udt.convertidores.ProductoConverter;
-import chc.tfm.udt.repositorios.ProductoRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import chc.tfm.udt.mappers.ProductoRowMapper;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.*;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+@Log
 @Service(value = "ProductoService")
 public class ProductoService implements CrudService<Producto> {
 
-    private final Logger LOG = LoggerFactory.getLogger(getClass());
-    private ProductoRepository productoRepository;
-    private ProductoConverter productoConverter;
-//------si yo veo que 1 gran problema es que se genera 1 objeto dentro de otro infinitamente
-// vamos a hacer una cosa
-    public ProductoService(@Qualifier(value = "ProductoRepository") ProductoRepository productoRepository,
-                           @Qualifier(value = "ProductoConverter") ProductoConverter productoConverter,
-                           @Qualifier(value = "JdbcTemplate") JdbcTemplate JdbcTemplate) {
-        this.productoRepository = productoRepository;
-        this.productoConverter = productoConverter;
+    private JdbcTemplate jdbcTemplate;
+
+    public ProductoService(@Qualifier(value = "JdbcTemplate") JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
     public Producto createOne(Producto producto) {
-        ProductoEntity pe = productoConverter.convertToDatabaseColumn(producto);
-        ProductoEntity saved = productoRepository.save(pe);
-        Producto returned = productoConverter.convertToEntityAttribute(saved);
-        return returned;
+        log.info("Entramos en el INSERT DE PRODUCTO");
+        Producto inserted = null;
+
+        String sqlProducto = "INSERT INTO productos (nombre, precio, create_at) VALUES (?, ?, NOW())";
+
+        this.jdbcTemplate.update(sqlProducto, producto.getNombre(), producto.getPrecio());
+        log.info("PRODUCTO INSERTADO CORRECTAMENTE :)");
+
+        String sqlInserted = "SELECT A.id, A.nombre, A.precio, A.create_at " +
+                             "FROM productos A " +
+                             "WHERE A.id=LAST_INSERT_ID()";
+        List<Producto> results = this.jdbcTemplate.query(sqlInserted, new ProductoRowMapper());
+        if (results.size() > 0) {
+            inserted = results.get(0);
+            log.info("INSERTADO: " + inserted.toString());
+        }
+
+        return inserted;
     }
 
     @Override
     @Transactional (readOnly = true)
     public Producto findOne(Long id) {
-        String sql = "SELECT A.* " + 
-                     "FROM productos A " + 
-                     "WHERE A.id=?";
-
-        
+        log.info("Entramos en el FIND ONE de producto");
         Producto resultado = null;
-        Optional<ProductoEntity> buscar = productoRepository.findById(id);
-        if(buscar.isPresent()){
-            ProductoEntity encontrado = buscar.get();
-            resultado = productoConverter.convertToEntityAttribute(encontrado);
+
+        String sql =    "SELECT A.id, A.nombre, A.precio, A.create_at " +
+                        "FROM productos A " +
+                        "WHERE A.id=?";
+        List<Producto> results = this.jdbcTemplate.query(sql, new Object[]{id}, new ProductoRowMapper());
+        if (results.size() > 0) {
+            resultado = results.get(0);
+            log.info("RECUPERADO: " + resultado.toString());
         }
         return resultado;
     }
 
     @Override
     public Producto updateOne(Long id, Producto producto) {
-        LOG.info("Entramos en update");
+       log.info("Entramos en update");
         Producto resultado = null;
-        Optional<ProductoEntity> buscar = productoRepository.findById(id);
-        if(buscar.isPresent()){
-            ProductoEntity encontrado = buscar.get();
+        String sqlUpdate =      "UPDATE productos " +
+                                "SET nombre=?, precio=? " +
+                                "WHERE productos.id=?";
 
-            encontrado.setNombre(producto.getNombre());
-            encontrado.setPrecio(producto.getPrecio());
-            encontrado.setCreateAt(producto.getCreateAt());
+       int row = jdbcTemplate.update(
+               sqlUpdate,
+               producto.getNombre(),
+               producto.getPrecio(),
+               id);
 
-            ProductoEntity guardado = productoRepository.save(encontrado);
-            resultado = productoConverter.convertToEntityAttribute(guardado);
-        }
+       if (row > 0) resultado = this.findOne(id);
+
+       log.info("UPDATE REALIZADO");
+
         return resultado;
     }
 
     @Override
     public Boolean deleteOne(Long id) {
-        if(productoRepository.findById(id).isPresent()){
-            productoRepository.deleteById(id);
-            return true;
-        }else{
-            return false;
-        }
+
+        String sql =    "DELETE " +
+                        "FROM productos " +
+                        "WHERE productos.id=?";
+        log.info(sql.replace("?", id.toString()));
+        int rows = jdbcTemplate.update(sql, id);
+        log.info("DELETED ROWS: " + rows);
+        return rows > 0;
     }
 
     @Override
     public List<Producto> findAll() {
-        List<Producto> resultado = productoRepository.findAll().
-                stream().
-                map(entity -> productoConverter.convertToEntityAttribute(entity)).
-                collect(Collectors.toList());
-        return resultado;
+        log.info("FIND ALL -> ");
+
+        String sql = "SELECT A.id, A.nombre, A.precio, A.create_at " +
+                     "FROM productos A ";
+
+        List<Producto> resultados = this.jdbcTemplate.query(sql, new ProductoRowMapper());
+
+        log.info("FIND ALL TERMINADO");
+        return resultados;
     }
 }

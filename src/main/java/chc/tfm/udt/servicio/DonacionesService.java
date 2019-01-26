@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Log
 @Service(value = "DonacionesService")
 public class DonacionesService implements CrudService<Donacion> {
-    private final Logger LOG = LoggerFactory.getLogger(getClass());
 
     private DonacionRepository donacionRepository;
     private ItemDonacionesService itemDonacionesService;
@@ -56,7 +55,7 @@ public class DonacionesService implements CrudService<Donacion> {
 
     @Override
     public Donacion createOne(Donacion donacion) {
-        LOG.info("LLegamos al servicio");
+        log.info("LLegamos al servicio");
         // recuperar datos del jugador
 //        Jugador recuperado = jugadoresService.findOne(donacion.getJugador().getId());
 //        donacion.setJugador(recuperado);
@@ -67,9 +66,9 @@ public class DonacionesService implements CrudService<Donacion> {
 //
 //
 //        DonacionEntity saved = donacionRepository.save(d);
-        LOG.info("Guardamos en la base de datos.");
+        log.info("Guardamos en la base de datos.");
 //        Donacion returned = converter.convertToEntityAttribute(saved);
-        LOG.info("Convertimos de nuevo a DTO ");
+        log.info("Convertimos de nuevo a DTO ");
         return null;
     }
     @Override

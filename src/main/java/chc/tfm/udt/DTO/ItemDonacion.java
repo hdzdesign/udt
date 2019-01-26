@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ItemDonacion {
@@ -21,5 +22,5 @@ public class ItemDonacion {
     public String toString() {
         return new Gson().toJson(this);
     }
-    public ItemDonacion(){}
+
 }

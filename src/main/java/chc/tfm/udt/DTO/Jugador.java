@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Jugador {
@@ -32,5 +33,5 @@ public class Jugador {
     public String toString() {
         return new Gson().toJson(this);
     }
-    public Jugador(){}
+
 }
