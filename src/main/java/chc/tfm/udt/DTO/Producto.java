@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Producto {
@@ -24,5 +25,5 @@ public class Producto {
     public String toString() {
         return new Gson().toJson(this);
     }
-    public Producto(){}
+
 }

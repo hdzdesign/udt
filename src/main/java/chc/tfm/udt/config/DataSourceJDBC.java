@@ -8,10 +8,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
 import javax.sql.DataSource;
 
 @PropertySource("classpath:application.properties")
 @Configuration
+@Component("DataSourceJDBC")
 public class DataSourceJDBC {
 
     @Value("${spring.datasource.url}") private String jdbcUrl;
