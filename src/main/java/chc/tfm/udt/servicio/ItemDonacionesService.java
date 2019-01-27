@@ -1,18 +1,12 @@
 package chc.tfm.udt.servicio;
 
 import chc.tfm.udt.DTO.ItemDonacion;
-import chc.tfm.udt.DTO.Producto;
-import chc.tfm.udt.entidades.ItemDonacionEntity;
-import chc.tfm.udt.convertidores.ItemConverter;
-import chc.tfm.udt.repositorios.ItemRepository;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-
-import java.util.List;
 
 @Log
 @Service("ItemDonacionesService")
@@ -47,47 +41,20 @@ public class ItemDonacionesService {
         return rows > 0;
     }
 
-    public ItemDonacion findOne(Long id) {
-//        ItemDonacion result = null;
-//        if (id != null) {
-//            Optional<ItemDonacionEntity> found = repository.findById(id);
-//            result = found.isPresent() ? converter.convertToEntityAttribute(found.get()) : null;
-//        }
-//        return result;
-        return null;
+    public void updateOne(Long id, ItemDonacion itemDonacion) {
+        log.info("UPDATE -> ITEMS");
+        ItemDonacion resultado = null;
+
+        String sqlUpdate =      "UPDATE donaciones_items " +
+                                "SET cantidad=?, producto_id=? " +
+                                "WHERE id=? ";
+        int row = template.update(sqlUpdate,
+                itemDonacion.getCantidad(),
+                itemDonacion.getProducto().getId(),
+                id);
+        log.info("ITEM ACTUALIZADO");
+
     }
 
-    public ItemDonacion updateOne(Long id, ItemDonacion itemDonacion) {
-//        ItemDonacion result = null;
-//        Optional<ItemDonacionEntity> found = repository.findById(id);
-//        if (found.isPresent()) {
-//            ItemDonacionEntity i = found.get();
-//            i.setCantidad(itemDonacion.getCantidad());
-//            ItemDonacionEntity saved = repository.save(i);
-//            result = converter.convertToEntityAttribute(saved);
-//        }
-//        return result;
-        return null;
-    }
-
-    public Boolean deleteOne(Long id) {
-//        boolean deleted = false;
-//        Optional<ItemDonacionEntity> found = repository.findById(id);
-//        if (found.isPresent()) {
-//            repository.delete(found.get());
-//            deleted = true;
-//        }
-//        return deleted;
-        return null;
-    }
-
-    public List<ItemDonacion> findAll() {
-//        return repository.findAll()
-//                .stream()
-//                .map(entity ->
-//                        converter.convertToEntityAttribute(entity))
-//                .collect(Collectors.toList());
-        return null;
-    }
 }
 

@@ -12,9 +12,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
@@ -32,6 +30,7 @@ public class DonacionesService implements CrudService<Donacion> {
         this.template = template;
     }
 
+    @Transactional(rollbackFor = {Exception.class})
     @Override
     public Donacion createOne(Donacion donacion) throws IllegalArgumentException {
         log.info("DONACION -> SERVICE");
@@ -102,34 +101,35 @@ public class DonacionesService implements CrudService<Donacion> {
         return donacion;
     }
     @Override
-    @Transactional
+    @Transactional(rollbackFor = {Exception.class})
     public Donacion updateOne(Long id, Donacion donacion) {
+        log.info("UPDATE - > DONACION");
         Donacion resultado = null;
 
-//        Optional<DonacionEntity> buscar = donacionRepository.findById(id);
-//        if(buscar.isPresent()){
-//            DonacionEntity encontrado = buscar.get();
-//
-//            encontrado.setId(donacion.getId());
-//            encontrado.setObservacion(donacion.getObservacion());
-//            encontrado.setDescripcion(donacion.getDescripcion());
-//            encontrado.setCreateAt(donacion.getCreateAt());
-//            if(encontrado.getId() != null){
-//                //encontrado.setJugadorEntity(donacion.getJugador());
-//
-//            }
-//
-//            //Encontrar los items de cada donacion
-//            List<ItemDonacionEntity> itemsDonacion = findItemsDonacionFromDonacion(donacion);
-//            encontrado.setItems(itemsDonacion);
-//            // Guardamos
-//           DonacionEntity guardado = donacionRepository.save(encontrado);
-//           resultado = converter.convertToEntityAttribute(guardado);
-//
-//        }
+        String sql =    "UPDATE donaciones D " +
+                        "SET D.descripcion=?, " +
+                        "D.observacion=?, " +
+                        "D.jugador_id=? " +
+                        "WHERE D.id=?";
+        int row = template.update(sql,
+                donacion.getDescripcion(),
+                donacion.getObservacion(),
+                donacion.getJugador().getId(),
+                donacion.getId());
+        log.info("DONACION ACTUALIZADA");
+
+        log.info("ACTUALIZANDO ITEMS DE LA DONACION");
+        donacion.getItems().forEach(item -> {
+            this.itemDonacionesService.updateOne(item.getId(), item);
+        });
+        log.info("ITEMS ACTUALIZADOS");
+
+        log.info("RECUPERANDO INFORMACION ACTUALIZADA");
+        resultado = this.findOne(id);
         return resultado;
     }
     @Override
+    @Transactional (rollbackFor = {Exception.class})
     public Boolean deleteOne(Long id) {
         log.info("DELETE - > DONACIONES");
         String sql =
@@ -147,6 +147,7 @@ public class DonacionesService implements CrudService<Donacion> {
         }
     }
     @Override
+    @Transactional(readOnly = true)
     public List<Donacion> findAll() {
         log.info("FIND ALL - > Donaciones");
         String sql =
