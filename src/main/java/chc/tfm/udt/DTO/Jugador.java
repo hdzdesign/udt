@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Jugador {
+public class Jugador extends MensajeError {
 
     private Long id;
     private String nombre;

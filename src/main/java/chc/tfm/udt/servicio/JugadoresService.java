@@ -2,11 +2,7 @@ package chc.tfm.udt.servicio;
 
 import chc.tfm.udt.DTO.Donacion;
 import chc.tfm.udt.DTO.Jugador;
-import chc.tfm.udt.entidades.DonacionEntity;
-import chc.tfm.udt.entidades.JugadorEntity;
-import chc.tfm.udt.convertidores.JugadorConverter;
 import chc.tfm.udt.mappers.JugadorRowMapper;
-import chc.tfm.udt.repositorios.JugadorRepository;
 import com.google.gson.Gson;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,27 +12,20 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Log
 @Service(value = "JugadoresService")
 public class JugadoresService implements CrudService<Jugador> {
 
-    private JugadorRepository jugadorRepository;
     private CrudService<Donacion> donacionesService;
-    private JugadorConverter converter;
     private JdbcTemplate jdbcTemplate;
 
 
 
-    public JugadoresService (@Qualifier("JugadorRepository") JugadorRepository jugadorRepository,
-                             @Qualifier("DonacionesService") @Lazy CrudService<Donacion> donacionesService,
-                             @Qualifier("JugadorConverter") JugadorConverter converter,
+    public JugadoresService (@Qualifier("DonacionesService") @Lazy CrudService<Donacion> donacionesService,
                              @Qualifier("JdbcTemplate")JdbcTemplate  jdbcTemplate ){
-        this.jugadorRepository = jugadorRepository;
         this.donacionesService = donacionesService;
-        this.converter = converter;
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -120,7 +109,7 @@ public class JugadoresService implements CrudService<Jugador> {
         List<Donacion> resultado = null;
 
         String sqlDonacion =
-                "SELECT DISTINCT A.id " +
+                "SELECT A.id " +
                 "FROM donaciones A " +
                 "WHERE A.jugador_id=?";
         RowMapper<Long> idMapper = ((rs, i) -> rs.getLong("id"));
@@ -139,54 +128,73 @@ public class JugadoresService implements CrudService<Jugador> {
 
     @Override
     public Jugador updateOne(Long id, Jugador jugador) {
+        log.info("UPDATE -> JUGADOR");
         Jugador resultado = null;
 
-//        Optional<JugadorEntity> buscar = jugadorRepository.findById(id);
-//        if(buscar.isPresent()){
-//            JugadorEntity encontrado = buscar.get();
-//
-//            // setear atributos en el entity encontrado
-//            encontrado.setNombre(jugador.getNombre());
-//            encontrado.setApellido1(jugador.getApellido1());
-//            encontrado.setApellido2(jugador.getApellido2());
-//            encontrado.setEdad(jugador.getEdad());
-//            encontrado.setNacionalidad(jugador.getNacionalidad());
-//            encontrado.setDni(jugador.getDni());
-//            encontrado.setMail(jugador.getMail());
-//            encontrado.setTelefono(jugador.getTelefono());
-//            encontrado.setDorsal(jugador.getDorsal());
-//            encontrado.setInscripcion(jugador.getInscripcion());
-//            encontrado.setFoto(jugador.getFoto());
-//
-//            // encontrar las donaciones del jugador
-//            List<DonacionEntity> donacionEntities = findDonacionesFromJugador(jugador);
-//
-//           encontrado.setDonaciones(donacionEntities);
-//
-//            // guardar cambios
-//            JugadorEntity guardado = jugadorRepository.save(encontrado);
-//            resultado = converter.convertToEntityAttribute(guardado);
-//        }
+        String sql =    "UPDATE jugadores A " +
+                        "SET A.nombre=?, " +
+                        "A.apellido1=?, " +
+                        "A.apellido2=?, " +
+                        "A.dni=?, " +
+                        "A.dorsal=?, " +
+                        "A.foto=?, " +
+                        "A.inscripcion=?, " +
+                        "A.mail=?, " +
+                        "A.nacimiento=?, " +
+                        "A.nacionalidad=?, " +
+                        "A.telefono=? " +
+                        "WHERE A.id=?";
+
+        int row = jdbcTemplate.update(
+                sql,
+                jugador.getNombre(),
+                jugador.getApellido1(),
+                jugador.getApellido2(),
+                jugador.getDni(),
+                jugador.getDorsal(),
+                jugador.getFoto(),
+                jugador.getInscripcion(),
+                jugador.getMail(),
+                jugador.getNacimiento(),
+                jugador.getNacionalidad(),
+                jugador.getTelefono(),
+                id
+        );
+        log.info("JUGADOR ACTUALIZADO");
+        if (row > 0) {
+            log.info("RECUPERANDO INFORMACION");
+            resultado = this.findOne(id);
+        }
+
         return resultado;
     }
 
     @Override
     public Boolean deleteOne(Long id) {
-        if(jugadorRepository.findById(id).isPresent()){
-            jugadorRepository.deleteById(id);
-            return true;
-        } else {
-            return false;
-        }
+        log.info("DELETE -> JUGADOR");
+
+        String sql =    "DELETE " +
+                        "FROM jugadores " +
+                        "WHERE jugadores.id=?";
+
+        log.info(sql.replace("?", id.toString()));
+        int rows = jdbcTemplate.update(sql,id);
+        log.info("Jugador borrado correctamente");
+        return rows > 0;
     }
 
     @Override
     public List<Jugador> findAll() {
-        List<Jugador> resultado = jugadorRepository.findAll().
-                stream().
-                map(entity -> converter.convertToEntityAttribute(entity)).
-                collect(Collectors.toList());
-        return resultado;
+        log.info("FIND ALL -> ");
+
+        String sql =    "SELECT id, apellido1, Apellido2, dni, dorsal, edad," +
+                                " foto, inscripcion, mail, nacimiento, nacionalidad, nombre, telefono " +
+                         "FROM jugadores J ";
+
+        List<Jugador> resultados = this.jdbcTemplate.query(sql, new JugadorRowMapper());
+        log.info("FIND ALL TERMINADO");
+        return resultados;
+
     }
 
 }

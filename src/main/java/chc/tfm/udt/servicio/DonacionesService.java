@@ -2,17 +2,10 @@ package chc.tfm.udt.servicio;
 
 import chc.tfm.udt.DTO.Donacion;
 import chc.tfm.udt.DTO.ItemDonacion;
-import chc.tfm.udt.DTO.Jugador;
-import chc.tfm.udt.DTO.Producto;
-import chc.tfm.udt.entidades.DonacionEntity;
-import chc.tfm.udt.entidades.ItemDonacionEntity;
-import chc.tfm.udt.convertidores.DonacionConverter;
-import chc.tfm.udt.convertidores.ItemConverter;
 import chc.tfm.udt.mappers.DonacionRowMapper;
-import chc.tfm.udt.repositorios.DonacionRepository;
+import chc.tfm.udt.mappers.ItemDonacionRowMapper;
+import com.google.gson.Gson;
 import lombok.extern.java.Log;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
@@ -20,101 +13,97 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Optional;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 @Log
 @Service(value = "DonacionesService")
 public class DonacionesService implements CrudService<Donacion> {
 
-    private DonacionRepository donacionRepository;
     private ItemDonacionesService itemDonacionesService;
-    private DonacionConverter converter;
-    private ItemConverter itemConverter;
-    private JugadoresService jugadoresService;
     private JdbcTemplate template;
 
     @Autowired
-    public DonacionesService(@Qualifier("IDonacionRepository") DonacionRepository donacionRepository,
-                             @Qualifier("DonacionConverter") DonacionConverter converter,
-                             @Qualifier("ItemConverter")ItemConverter itemConverter,
-                             @Qualifier("ItemDonacionesService") @Lazy ItemDonacionesService itemDonacionesService,
-                             @Qualifier("JugadoresService") @Lazy JugadoresService jugadoresService,
-                             @Qualifier("JdbcTemplate") @Lazy JdbcTemplate template)
-    {
-        this.donacionRepository = donacionRepository;
-        this.converter = converter;
-        this.itemConverter = itemConverter;
+    public DonacionesService(@Qualifier("ItemDonacionesService") ItemDonacionesService itemDonacionesService,
+            @Qualifier("JdbcTemplate") @Lazy JdbcTemplate template) {
         this.itemDonacionesService = itemDonacionesService;
-        this.jugadoresService = jugadoresService;
         this.template = template;
     }
 
     @Override
-    public Donacion createOne(Donacion donacion) {
-        log.info("LLegamos al servicio");
-        // recuperar datos del jugador
-//        Jugador recuperado = jugadoresService.findOne(donacion.getJugador().getId());
-//        donacion.setJugador(recuperado);
-//        DonacionEntity d = converter.convertToDatabaseColumn(donacion);
-//
-//        LOG.info("Convertimos a ENTITY");
-//        LOG.info(d.toString());
-//
-//
-//        DonacionEntity saved = donacionRepository.save(d);
-        log.info("Guardamos en la base de datos.");
-//        Donacion returned = converter.convertToEntityAttribute(saved);
-        log.info("Convertimos de nuevo a DTO ");
-        return null;
+    public Donacion createOne(Donacion donacion) throws IllegalArgumentException {
+        log.info("DONACION -> SERVICE");
+        Assert.notNull(donacion, "Donacion no puede ser null");
+        Assert.notNull(donacion.getItems(), "Donacion necesita tener items");
+        Assert.notNull(donacion.getJugador().getId(), "Id del jugador no puede ser null");
+        String sql =
+                "INSERT INTO donaciones" +
+                "(create_at, descripcion, observacion, jugador_id)" +
+                "VALUES (NOW(), ?, ?, ?)";
+        this.template.update(
+                sql,
+                donacion.getDescripcion(),
+                donacion.getObservacion(),
+                donacion.getJugador().getId()
+        );
+        log.info("INSERTADO");
+        log.info("RECUPERAMOS EL ID DE LA DONACION INSERTADA");
+        Donacion inserted = null;
+        String sqlInserted =
+                "SELECT id " +
+                "FROM donaciones " +
+                "WHERE donaciones.id=LAST_INSERT_ID()";
+        RowMapper<Long> idMapper = ((rs, i) -> rs.getLong("id"));
+        List<Long> ids = this.template.query(sqlInserted, idMapper);
+        if (ids.size() > 0) {
+            log.info("INSERTANDO ITEMS");
+            donacion.getItems().forEach(item -> {
+                try {
+                    this.itemDonacionesService.createOne(item, ids.get(0));
+                }catch (Exception e) {
+                    log.severe(e.toString());
+                    log.severe(e.getMessage());
+                }
+            });
+            log.info("ITEMS INSERTADOS");
+            log.info("RECUPERANDO TODA LA INFORMACION DE LA DONACION");
+            inserted = this.findOne(ids.get(0));
+            log.info("INSERTADA: " + inserted.toString());
+        }
+        log.info("DONACIÓN CREADA");
+        return inserted;
     }
     @Override
-@Transactional(readOnly = true)    
+    @Transactional(readOnly = true)
     public Donacion findOne(Long id) {
-
-        String sqlDonacion = "SELECT DISTINCT A.id, A.descripcion, A.observacion, A.create_at " +
-                             "FROM donaciones A " + 
-                             "WHERE A.id=?";
-
-        Donacion resultado = this.template.query(sqlDonacion, new Object[]{id}, new DonacionRowMapper()).get(0);
-
-       if (resultado != null) {
-            String sqlItems = "SELECT A.id AS item_id, A.cantidad, B.id AS producto_id, B.nombre, B.precio, B.create_at " +
-                              "FROM donaciones_items A " +
-                              "LEFT JOIN productos B " +
-                              "ON A.producto_id=B.id " +
-                              "INNER JOIN donaciones C " +
-                              "ON C.id=A.donacion_id " +
-                              "WHERE C.id=?";
-
-            RowMapper<ItemDonacion> itemMapper = ((rs, i) -> {
-                ItemDonacion item = new ItemDonacion();
-                Producto p = new Producto();
-                item.setId(rs.getLong("item_id"));
-                item.setCantidad(rs.getLong("cantidad"));
-                p.setId(rs.getLong("producto_id"));
-                p.setNombre(rs.getString("nombre"));
-                p.setPrecio(rs.getDouble("precio"));
-                p.setCreateAt(rs.getDate("create_at"));
-
-                item.setProducto(p);
-                return item;
-            });
-            List<ItemDonacion> items = this.template.query(sqlItems, new Object[]{id}, itemMapper);
-            
-            resultado.setItems(items);
+        log.info("DONACIONES - FIND ONE");
+        Donacion donacion = new Donacion();
+        String sqlDonacion =
+                "SELECT A.id, A.descripcion, A.observacion, A.create_at, A.jugador_id " +
+                "FROM donaciones A " +
+                "WHERE A.id=?";
+        List<Donacion> resultado = this.template.query(sqlDonacion, new Object[]{id}, new DonacionRowMapper());
+        log.info("ENCONTRADOS: " + new Gson().toJson(resultado));
+        if (resultado.size() > 0) {
+            donacion = resultado.get(0);
+            String sqlItems =
+                    "SELECT A.id AS item_id, A.cantidad, B.id AS producto_id, B.nombre, B.precio, B.create_at " +
+                    "FROM donaciones_items A " +
+                    "LEFT JOIN productos B " +
+                    "ON A.producto_id=B.id " +
+                    "INNER JOIN donaciones C " +
+                    "ON C.id=A.donacion_id " +
+                    "WHERE C.id=?";
+            List<ItemDonacion> items = this.template.query(sqlItems, new Object[]{id}, new ItemDonacionRowMapper());
+            donacion.setItems(items);
         }
-         
-        return resultado;
+        return donacion;
     }
-
     @Override
     @Transactional
-        public Donacion updateOne(Long id, Donacion donacion) {
+    public Donacion updateOne(Long id, Donacion donacion) {
         Donacion resultado = null;
 
 //        Optional<DonacionEntity> buscar = donacionRepository.findById(id);
@@ -138,25 +127,49 @@ public class DonacionesService implements CrudService<Donacion> {
 //           resultado = converter.convertToEntityAttribute(guardado);
 //
 //        }
-
         return resultado;
     }
-
     @Override
     public Boolean deleteOne(Long id) {
-        if(donacionRepository.findById(id).isPresent()) {
-            donacionRepository.deleteById(id);
+        log.info("DELETE - > DONACIONES");
+        String sql =
+                "DELETE " +
+                "FROM donaciones" +
+                "WHERE donaciones.id=?";
+        log.info(sql.replace("?", id.toString()));
+        int rows = template.update(sql, id);
+        if (rows > 0) {
+            log.info("ELIMINADO CORRECTAMENTE");
+            return true;
+        } else {
+            log.severe("NO SE HA PODIDO BORRAR EL JUGADOR.");
+            return false;
         }
-        return true;
     }
-
     @Override
     public List<Donacion> findAll() {
-        List<Donacion> resultado = donacionRepository.findAll().
-                stream().
-                map(d -> converter.convertToEntityAttribute(d)).
-                collect(Collectors.toList());
-        return resultado;
-    }
+        log.info("FIND ALL - > Donaciones");
+        String sql =
+                "SELECT A.id, A.descripcion, A.observacion, A.create_at, A.jugador_id " +
+                "FROM donaciones A";
+        List<Donacion> resultados = this.template.query(sql, new DonacionRowMapper());
+//        log.info("DONACIONES: " + new Gson().toJson(resultados));
+        if (resultados.size() > 0) {
+            resultados.forEach(e -> {        String sqlItems =
+                        "SELECT A.id AS item_id, A.cantidad, B.id AS producto_id, B.nombre, B.precio, B.create_at " +
+                        "FROM donaciones_items A " +
+                        "LEFT JOIN productos B " +
+                        "ON A.producto_id=B.id " +
+                        "INNER JOIN donaciones C " +
+                        "ON C.id=A.donacion_id " +
+                        "WHERE C.id=? ";
 
+                List<ItemDonacion> items = this.template.query(sqlItems, new Object[]{e.getId()}, new ItemDonacionRowMapper());
+//                log.info("DONACION: " + e.getId() + ",items: " + new Gson().toJson(items));
+                e.setItems(items);
+            });
+        }
+        log.info("Donaciones FindAll terminado");
+        return resultados;
+    }
 }
