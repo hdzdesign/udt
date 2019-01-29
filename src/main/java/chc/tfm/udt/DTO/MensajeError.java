@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Clase para mostrar error de falta de datos.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

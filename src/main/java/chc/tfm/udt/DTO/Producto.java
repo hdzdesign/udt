@@ -7,6 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.Date;
 
+/**
+ * Template de la clase Donación que usaremos para realizar la transación de sus datos
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

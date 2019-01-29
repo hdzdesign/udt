@@ -130,6 +130,10 @@ public class JugadoresService implements CrudService<Jugador> {
 
     /**
      * Utilizaremos JdbcTemplate para realizar la busqueda de una donación asociada a 1 Jugador
+     * Con la Query estamos recuperando las donaciones con la condición del id del jugador
+     * Utilizaremos la Interfaz RowMapper para recuperar una lista con todos los ID asociados al jugador.
+     * Utilizaremos el servicio de Donaciones.findOne para buscar la donación y almacenarla en 1 lista de donaciones
+     * que deolveremos al controller.
      * @param id
      * @return
      */
@@ -156,6 +160,16 @@ public class JugadoresService implements CrudService<Jugador> {
         return resultado;
     }
 
+    /**
+     * Utilizaremos JdbcTemplate para realizar la actualización del jugador.
+     * Recuperamos toda la información del objeto que llega desde el controller y lo insertamos en la base de datos
+     * con la condición que cumpla con el id aportado.
+     * Una vez realizada la transación utilizaremos el servicio findOne de esta misma clase para devolver el jugador al controller.
+     * @param id la clave única de cada registro
+     * @param jugador
+     * @return
+     */
+    @Transactional
     @Override
     public Jugador updateOne(Long id, Jugador jugador) {
         log.info("UPDATE -> JUGADOR");
@@ -199,6 +213,13 @@ public class JugadoresService implements CrudService<Jugador> {
         return resultado;
     }
 
+    /**
+     * Utilizaremos JdbcTemplate para realizar el borrado del jugador.
+     * Utilizaremos la Query con la condición de que coincida el id con el aportado y borrar el jugador.
+     * @param id Es el identificador del registro que vamos a borrar de la base de datos
+     * @return
+     */
+    @Transactional
     @Override
     public Boolean deleteOne(Long id) {
         log.info("DELETE -> JUGADOR");
@@ -213,6 +234,13 @@ public class JugadoresService implements CrudService<Jugador> {
         return rows > 0;
     }
 
+    /**
+     * Utilizaremos JdbcTemplate para realizar la busqueda de todos los  jugadores.
+     * Utilizaremos la Query para realizar la consulta en base de datos
+     * Utilizaremos la clase Mapper de Jugador para devoler una lista de todos los jugadores encontrados en la tabla.
+     * @return
+     */
+    @Transactional(readOnly = true)
     @Override
     public List<Jugador> findAll() {
         log.info("FIND ALL -> ");
