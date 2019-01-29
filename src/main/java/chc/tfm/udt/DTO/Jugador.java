@@ -8,11 +8,14 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Template de la clase Donación que usaremos para realizar la transación de sus datos
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Jugador {
+public class Jugador extends MensajeError {
 
     private Long id;
     private String nombre;

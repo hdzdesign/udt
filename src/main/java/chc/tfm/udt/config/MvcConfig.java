@@ -12,8 +12,8 @@ import java.nio.file.Paths;
 /**
  * Clase que implimenta a WebMvcConfigurer , para poder complementar y modificar la configuración
  */
-@Configuration
-public class MvcConfig implements WebMvcConfigurer {
+//@Configuration
+//public class MvcConfig implements WebMvcConfigurer {
 
       //  private final Logger log = LoggerFactory.getLogger(getClass());
     /**
@@ -32,4 +32,4 @@ public class MvcConfig implements WebMvcConfigurer {
 //
 //    }
 
-}
+//}

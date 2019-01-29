@@ -8,23 +8,26 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Template de la clase Donación que usaremos para realizar la transación de sus datos
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Donacion {
+public class Donacion extends MensajeError {
 
-    private Long id;
+        private Long id;
 
-    private String descripcion;
+        private String descripcion;
 
-    private String observacion;
+        private String observacion;
 
-    private Date createAt;
+        private Date createAt;
 
-    private Jugador jugador;
+        private Jugador jugador;
 
-    private List<ItemDonacion> items;
+        private List<ItemDonacion> items;
 
     @Override
     public String toString() {

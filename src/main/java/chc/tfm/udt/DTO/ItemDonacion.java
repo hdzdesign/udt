@@ -6,11 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Template de la clase Donación que usaremos para realizar la transación de sus datos
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class ItemDonacion {
+@JsonInclude(JsonInclude.Include.NON_NULL) //te esconde los campos que son null  guay ;)
+public class ItemDonacion extends MensajeError {
 
     private Long id;
 
