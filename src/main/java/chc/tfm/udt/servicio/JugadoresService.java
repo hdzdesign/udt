@@ -14,6 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ *  Esta es la clase servicio de Jugador , que se encarga de trabajar contra la base de datos y devolver los valores al
+ *  controller.
+ */
 @Log
 @Service(value = "JugadoresService")
 public class JugadoresService implements CrudService<Jugador> {
@@ -21,7 +25,11 @@ public class JugadoresService implements CrudService<Jugador> {
     private CrudService<Donacion> donacionesService;
     private JdbcTemplate jdbcTemplate;
 
-
+    /**
+     * Constructor y inyección de los objetos que vamos a usar en la clase.
+     * @param donacionesService
+     * @param jdbcTemplate
+     */
 
     public JugadoresService (@Qualifier("DonacionesService") @Lazy CrudService<Donacion> donacionesService,
                              @Qualifier("JdbcTemplate")JdbcTemplate  jdbcTemplate ){
@@ -29,6 +37,16 @@ public class JugadoresService implements CrudService<Jugador> {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * Usaremos JdbcTemplate  y la Query de SQL para insertar el jugador en la base de datos.
+     * Recuperamos los datos del controller y los insertamos con el metodo .update de jdbctemplate.
+     * Una vez insertado el jugador vamos a recuperar el ultimo Id  utilizando el Mapper de la clase jugador.
+     * Recuperamos la lista que devuelve el Mapper y con el get recuperamos el primer valor de la lista , así podemos
+     * trabajar con el para recuperar la lista de donaciones de este jugador y actualizarlas
+     * @param jugador
+     * @return
+     */
+    @Transactional
     @Override
     public Jugador createOne(Jugador jugador) {
         log.info("Entramos en el INSERT de JUGADORES");
@@ -81,6 +99,13 @@ public class JugadoresService implements CrudService<Jugador> {
 
         return inserted;
     }
+
+    /**
+     * Utilizaremos JdbcTemplate para realizar la busqueda de un Jugador
+     * Utilizamos la clase Mapper de jugador para deolver los resultados al controller
+     * @param id la clave única de cada registro
+     * @return
+     */
     @Override
     @Transactional(readOnly = true)
     public Jugador findOne(Long id) {
@@ -103,6 +128,11 @@ public class JugadoresService implements CrudService<Jugador> {
         return resultado;
     }
 
+    /**
+     * Utilizaremos JdbcTemplate para realizar la busqueda de una donación asociada a 1 Jugador
+     * @param id
+     * @return
+     */
     @Transactional(readOnly = true)
     public List<Donacion> findJugadorDonations(Long id){
         log.info("SERVICE -> Busqueda de jugador y sus Donaciones");

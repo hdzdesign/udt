@@ -13,18 +13,28 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ *  Clase REST-FULL  que controla el End-Point de productos y el End-Point de las donaciones respecto al jugador.
+ */
 @RestController(value = "ProductosController")
 public class ProductosController implements CrudController<Producto> {
     private final Logger LOG = LoggerFactory.getLogger(getClass());
 
     private CrudService<Producto> service;
 
+    /**
+     * Constructor que Inyecta el servicio de la clase Producto, y inicializa.
+     * @param service
+     */
     @Autowired
     public ProductosController(@Qualifier(value = "ProductoService")CrudService<Producto> service) {
         this.service = service;
     }
 
-
+    /**
+     *  End-Point que recupera todos los productos de la base de datos llamando al servicio y devolviendo en JSON.
+     * @return
+     */
     @Override
     @GetMapping(value = "/productos")
     public ResponseEntity<List<Producto>> getAll() {
@@ -32,6 +42,11 @@ public class ProductosController implements CrudController<Producto> {
        return new ResponseEntity<>(productosList, HttpStatus.OK);
     }
 
+    /**
+     *   End-Point que Inserta un jugador de la base de datos llamando al servicio y devolviendo una respeusta OK
+     * @param producto
+     * @return
+     */
     @Override
     @PostMapping(value = "/productos")
     public ResponseEntity<Producto> createOne(@RequestBody Producto producto) {
@@ -40,6 +55,11 @@ public class ProductosController implements CrudController<Producto> {
         return new ResponseEntity<>(resultado, HttpStatus.OK);
     }
 
+    /**
+     * End-Point que recupera un producto de la base de datos llamando al servicio y devolviendo en JSON.
+     * @param id
+     * @return
+     */
     @Override
     @GetMapping(value = "/productos/{id}")
     public ResponseEntity<Producto> getOne(@PathVariable Long id) {
@@ -50,6 +70,12 @@ public class ProductosController implements CrudController<Producto> {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * End-Point que Actualiza un producto de la base de datos llamando al servicio y devolviendo en JSON.
+     * @param id
+     * @param producto
+     * @return
+     */
     @Override
     @PutMapping(value = "/productos/{id}")
     public ResponseEntity<Producto> updateOne(@PathVariable Long id, @RequestBody Producto producto) {
@@ -62,6 +88,11 @@ public class ProductosController implements CrudController<Producto> {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * End-Point que borra un jugador de la base de datos llamando al servicio Jugadores
+     * @param id
+     * @return
+     */
     @Override
     @DeleteMapping(value = "/productos/{id}")
     public ResponseEntity<HttpStatus> deleteOne(@PathVariable Long id) {

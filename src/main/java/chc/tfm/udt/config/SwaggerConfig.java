@@ -7,6 +7,9 @@ import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 
+/**
+ * Clase que nos permitirá documentar la Api, y ademas con spring podemos genera el servicio.
+ */
 @Configuration
 public class SwaggerConfig {
 

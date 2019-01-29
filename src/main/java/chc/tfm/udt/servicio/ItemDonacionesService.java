@@ -8,17 +8,34 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+/**
+ *  Esta es la clase servicio de ITEMDONACIÓN , que se encarga de trabajar contra la base de datos y devolver los valores al
+ *  controller.
+ */
 @Log
 @Service("ItemDonacionesService")
 public class ItemDonacionesService {
 
     private JdbcTemplate template;
 
+    /**
+     * Constructor y inyección de los objetos que vamos a usar en esta clase.
+     * @param template Esta es la interfaz encargada de trabajar contra la base de datos
+     */
     @Autowired
     public ItemDonacionesService(@Qualifier("JdbcTemplate") JdbcTemplate template) {
         this.template = template;
     }
 
+    /**
+     * Controlamos que no llegue ninún dato null.
+     * Insertamos los items de las donaciones , recuperando la cantidad y el id del producto , unicamente vamos a
+     * trabajar con el id del producto puesto que tenemos una clase sericio para ese crud.
+     * @param itemDonacion
+     * @param donacionId
+     * @return Si esta insertado devolvemos un true
+     * @throws IllegalArgumentException
+     */
     public boolean createOne(ItemDonacion itemDonacion, Long donacionId) throws IllegalArgumentException {
         log.info("ITEM SERVICE - CREATE ONE");
         Assert.notNull(itemDonacion, "Item donacion no puede ser null");
@@ -40,6 +57,13 @@ public class ItemDonacionesService {
         log.info("ITEM AÑADIDO");
         return rows > 0;
     }
+
+    /**
+     * Utilizamos la query de SQL para actualizar los items que vienen del controller
+     * Unicamente recuperamos la información porque a este metodo se llama desde Donacion , cuando queremos actualizar.
+     * @param id
+     * @param itemDonacion
+     */
 
     public void updateOne(Long id, ItemDonacion itemDonacion) {
         log.info("UPDATE -> ITEMS");
